@@ -96,6 +96,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: rgba(255,255,255,.96); backdrop-filter: blur(10px);
   border-top: 1px solid var(--ligne);
 }
+body.demarrage .nav { display: none; }
+body.demarrage .vue { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
 .nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--encre-3); text-decoration: none; font-size: 11px; font-weight: 600; position: relative; transition: color var(--t); }
 .nav a.actif { color: var(--navy); }
 .nav a.actif::before { content: ''; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--orange); }

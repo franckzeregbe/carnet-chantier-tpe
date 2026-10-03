@@ -36,6 +36,8 @@ export async function afficher() {
   const changement = chemin !== derniereRoute;
   derniereRoute = chemin;
 
+  // Avant le premier remplissage, la barre du bas est masquée : elle ne mènerait nulle part.
+  document.body.classList.toggle('demarrage', !etat.configure);
   if (!etat.configure && chemin !== '/reglages') {
     marquerNav('accueil');
     await vueBienvenue(vue);
