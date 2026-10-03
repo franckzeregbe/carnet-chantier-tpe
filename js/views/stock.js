@@ -1,6 +1,6 @@
 // Kits de la quincaillerie dédiée : commandes, livraisons, paiements, stock par article.
 import { etat, enregistrer, supprimer } from '../store.js';
-import { html, raw, fcfa, num, todayISO, dateFr, toast, lireMontant, $, $$ } from '../util.js';
+import { html, raw, fcfa, num, todayISO, dateFr, toast, $, $$ } from '../util.js';
 import { ico, champ, input, select, textarea, segment, feuille, vide } from '../ui.js';
 import { stock, finances } from '../calc.js';
 import { partAcompte } from '../data.js';
@@ -51,7 +51,7 @@ export async function vueStock(vue) {
       </table>
     </div>
 
-    <div class="etiquette">Composition du kit <span>${fcfa(prixKit)} / latrine</span></div>
+    <div class="etiquette">Composition du kit <span>prix fixe ${fcfa(prixKit)} / latrine</span></div>
     <div class="carte plate"><p style="margin:0;color:var(--encre-2);font-size:14px">${kit.map((a) => `${a.qte} × ${a.nom}`).join(' · ')}</p>
       <a class="btn btn-petit" href="#/reglages" style="margin-top:12px">Modifier le kit et le prix</a></div>
 
@@ -68,15 +68,17 @@ export async function vueStock(vue) {
 }
 
 function formCommande(c = null) {
+  // Prix fixe arrêté avec la quincaillerie : il n'est pas modifiable à la commande.
   const prixKit = Number(etat.params.quincaillerie.prixKit) || 0;
-  const x = c || { date: todayISO(), nbKits: 3, prixUnitaire: prixKit, livre: false };
+  const x = c || { date: todayISO(), nbKits: 3, livre: false };
+  const prix = c?.prixUnitaire ?? prixKit;
   const paye = c ? payeCommande(c) : 0;
   feuille({
     titre: c ? 'Commande de kits' : 'Nouvelle commande de kits',
     corps: html`
       <div class="deux">
         ${raw(champ('Nombre de kits', input('nbKits', x.nbKits, { type: 'number', required: true, min: 1 })))}
-        ${raw(champ('Prix d’un kit (F)', input('prixUnitaire', x.prixUnitaire, { type: 'money' })))}
+        <div class="champ"><span class="champ-label">Prix fixe d’un kit</span><div class="valeur-fixe">${fcfa(prix)}</div></div>
       </div>
       <p class="note" id="total-cmd"></p>
       <div style="height:12px"></div>
@@ -95,12 +97,10 @@ function formCommande(c = null) {
     onOuvert: (form) => {
       const majTotal = () => {
         const n = Number(form.elements.nbKits.value) || 0;
-        const p = lireMontant(form.elements.prixUnitaire.value) || 0;
-        const acompte = Math.round(n * p * partAcompte(etat.params));
-        $('#total-cmd', form).innerHTML = `Total : <strong>${fcfa(n * p)}</strong> · acompte ${Math.round(partAcompte(etat.params) * 100)} % : <strong>${fcfa(acompte)}</strong>`;
+        const acompte = Math.round(n * prix * partAcompte(etat.params));
+        $('#total-cmd', form).innerHTML = `Total : <strong>${fcfa(n * prix)}</strong> · acompte ${Math.round(partAcompte(etat.params) * 100)} % : <strong>${fcfa(acompte)}</strong>`;
       };
       form.elements.nbKits.oninput = majTotal;
-      form.elements.prixUnitaire.oninput = majTotal;
       majTotal();
       const btn = $('#payer', form);
       if (btn) btn.onclick = () => formTransaction({ sens: 'out', cat: 'quincaillerie', montant: c.montant - paye, commandeId: c.id, libelle: `Kits quincaillerie (${c.nbKits}) — ${paye ? 'solde' : 'acompte'}`, tiers: etat.params.quincaillerie.nom });
@@ -108,7 +108,7 @@ function formCommande(c = null) {
     onValider: async (d) => {
       if (!(d.nbKits > 0)) { toast('Nombre de kits invalide', 'err'); return false; }
       const rec = await enregistrer('commandes', {
-        ...x, ...d, montant: d.nbKits * d.prixUnitaire, dateLivraison: d.livre ? d.dateLivraison : '',
+        ...x, ...d, prixUnitaire: prix, montant: d.nbKits * prix, dateLivraison: d.livre ? d.dateLivraison : '',
       });
       toast(c ? 'Commande mise à jour' : 'Commande enregistrée');
       rafraichir();

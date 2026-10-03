@@ -139,8 +139,9 @@ const terrain = (valeur, base) => (valeur === '' || valeur === null || valeur ==
 
 /**
  * Budget d'une latrine : kit, achats locaux et main-d'œuvre séparés.
+ * Le kit de quincaillerie a un prix FIXE ; seuls les achats locaux et la main-d'œuvre peuvent varier.
  * - Marge 1 (`marge`) : avec les prix de base — la marge officielle, celle des rapports.
- * - Marge 2 (`marge2`) : avec les prix terrain réellement obtenus — usage personnel uniquement.
+ * - Marge 2 (`marge2`) : avec les prix terrain des achats locaux et de la main-d'œuvre — usage personnel uniquement.
  */
 export function budgetLatrine(params, budgetLocal) {
   const prix = Number(params.contrat.prixLatrine) || 0;
@@ -150,15 +151,14 @@ export function budgetLatrine(params, budgetLocal) {
   const achats = somme(budgetLocal.filter((b) => !estMO(b)), (b) => b.montant);
   const local = achats + mo;
 
-  const kitTerrain = terrain(params.quincaillerie.prixKitTerrain, kit);
   const moTerrain = somme(budgetLocal.filter(estMO), (b) => terrain(b.montantTerrain, b.montant));
   const achatsTerrain = somme(budgetLocal.filter((b) => !estMO(b)), (b) => terrain(b.montantTerrain, b.montant));
   const marge = prix - kit - local;
-  const marge2 = prix - kitTerrain - achatsTerrain - moTerrain;
+  const marge2 = prix - kit - achatsTerrain - moTerrain;
 
   return {
     prix, kit, achats, mo, local, cout: kit + local, marge,
-    kitTerrain, achatsTerrain, moTerrain, coutTerrain: kitTerrain + achatsTerrain + moTerrain, marge2, gainTerrain: marge2 - marge,
+    achatsTerrain, moTerrain, coutTerrain: kit + achatsTerrain + moTerrain, marge2, gainTerrain: marge2 - marge,
   };
 }
 

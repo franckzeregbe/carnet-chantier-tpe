@@ -119,16 +119,24 @@ describe('finances', () => {
     assert.equal(b.mo, 43500);
     assert.equal(b.marge, 48500);
   });
-  test('Marge 2 : prix terrain obtenus, sans changer la Marge 1', () => {
-    const p = params();
-    p.quincaillerie = { ...p.quincaillerie, prixKitTerrain: 190000 };
-    const budget = BUDGET_DEFAUT.map((x) => (x.id === 'sable' ? { ...x, montantTerrain: 15000 } : x));
-    const b = budgetLatrine(p, budget);
+  test('Marge 2 : prix terrain des achats et de la main-d’œuvre, kit à prix fixe', () => {
+    const budget = BUDGET_DEFAUT.map((x) => {
+      if (x.id === 'sable') return { ...x, montantTerrain: 15000 };
+      if (x.id === 'macon') return { ...x, montantTerrain: 18000 };
+      return x;
+    });
+    const b = budgetLatrine(params(), budget);
     assert.equal(b.marge, 48500); // officielle, inchangée
-    assert.equal(b.kitTerrain, 190000);
+    assert.equal(b.kit, 196500); // le kit ne change jamais
     assert.equal(b.achatsTerrain, 33500);
-    assert.equal(b.marge2, 48500 + 6500 + 3000);
-    assert.equal(b.gainTerrain, 9500);
+    assert.equal(b.moTerrain, 41500);
+    assert.equal(b.marge2, 48500 + 3000 + 2000);
+    assert.equal(b.gainTerrain, 5000);
+  });
+  test('un ancien « prix du kit obtenu » enregistré est ignoré : le kit reste à prix fixe', () => {
+    const p = params();
+    p.quincaillerie = { ...p.quincaillerie, prixKitTerrain: 150000 };
+    assert.equal(budgetLatrine(p, BUDGET_DEFAUT).marge2, 48500);
   });
   test('Marge 2 = Marge 1 tant qu’aucun prix terrain n’est saisi', () => {
     const b = budgetLatrine(params(), BUDGET_DEFAUT);

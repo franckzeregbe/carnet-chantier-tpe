@@ -103,7 +103,7 @@ function blocMarge2(b, total) {
   return html`<details class="perso">
     <summary><span>🔒 Ma marge personnelle — Marge 2</span><small>Toucher pour afficher</small></summary>
     <dl class="infos">
-      <dt>Kit obtenu</dt><dd>− ${fcfa(b.kitTerrain)}</dd>
+      <dt>Kit quincaillerie (prix fixe)</dt><dd>− ${fcfa(b.kit)}</dd>
       <dt>Achats locaux (terrain)</dt><dd>− ${fcfa(b.achatsTerrain)}</dd>
       <dt>Main-d’œuvre (terrain)</dt><dd>− ${fcfa(b.moTerrain)}</dd>
       <dt><strong>Marge 2</strong></dt><dd class="${b.marge2 >= 0 ? 'ecart-pos' : 'ecart-neg'}"><strong>${fcfa(b.marge2)}</strong></dd>

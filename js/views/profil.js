@@ -59,16 +59,15 @@ export function champsContrat(c, t) {
     ${raw(champ('Contrôleur de l’ONG', input('controleur', c.controleur)))}`;
 }
 
-/** `avecTerrain` : ajoute le prix du kit réellement obtenu (Marge 2, usage personnel). */
-export function champsQuincaillerie(q, avecTerrain = false) {
+/** Le prix du kit est fixe (arrêté avec la quincaillerie) : il ne change pas pendant le chantier. */
+export function champsQuincaillerie(q) {
   return html`
     ${raw(champ('Nom de la quincaillerie', input('qnom', q.nom)))}
     <div class="deux">
-      ${raw(champ('Prix d’un kit (F)', input('prixKit', q.prixKit, { type: 'money' })))}
+      ${raw(champ('Prix fixe d’un kit (F)', input('prixKit', q.prixKit, { type: 'money' })))}
       ${raw(champ('Acompte à la commande (%)', input('acomptePct', q.acomptePct, { type: 'number' })))}
     </div>
-    ${raw(avecTerrain ? champ('🔒 Prix du kit obtenu (Marge 2)', input('prixKitTerrain', q.prixKitTerrain, { type: 'money', placeholder: 'Vide = même prix', vide: true }),
-    'Personnel : jamais imprimé ni partagé.') : '')}`;
+    <small class="aide" style="margin:-8px 0 14px">Prix arrêté avec la quincaillerie : il ne change pas pendant le chantier.</small>`;
 }
 
 /** Applique les champs saisis (quelle que soit la section) sur une copie des paramètres. */
@@ -85,7 +84,6 @@ export function appliquerProfil(p, d) {
       ...p.quincaillerie,
       ...('qnom' in d ? { nom: d.qnom } : {}),
       ...garder(['prixKit', 'acomptePct']),
-      ...garder(['prixKitTerrain']),
     },
   };
 }

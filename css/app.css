@@ -248,6 +248,7 @@ body.demarrage .vue { padding-bottom: calc(32px + env(safe-area-inset-bottom)); 
 }
 .champ textarea { resize: vertical; min-height: 84px; line-height: 1.4; }
 .champ input:focus, .champ select:focus, .champ textarea:focus, .recherche:focus { border-color: var(--navy-3); box-shadow: 0 0 0 3px rgba(44,110,155,.15); }
+.valeur-fixe { min-height: 48px; padding: 12px 13px; border: 1.5px dashed var(--ligne); border-radius: 11px; background: var(--sable); font-family: var(--titre); font-weight: 700; color: var(--navy); }
 .aide { display: block; margin-top: 5px; color: var(--encre-3); font-size: 12px; }
 .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .groupe { border: 1px solid var(--ligne); border-radius: var(--r); padding: 14px 14px 2px; margin-bottom: 14px; background: #FCFBF8; }

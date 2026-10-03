@@ -28,8 +28,7 @@ export const PARAMS_DEFAUT = {
   },
   quincaillerie: {
     nom: '',
-    prixKit: 196500,
-    prixKitTerrain: '',
+    prixKit: 196500, // prix fixe arrêté avec la quincaillerie : il ne change pas pendant le chantier
     acomptePct: 50,
   },
   options: {

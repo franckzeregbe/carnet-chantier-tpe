@@ -49,7 +49,7 @@ export async function vueReglages(vue) {
 
     <div class="etiquette">Achats</div>
     <div class="liste">
-      ${raw(ligneReglage('kit', 'Kit de quincaillerie', `${kit.length} articles · ${fcfa(params.quincaillerie.prixKit)} / latrine · acompte ${params.quincaillerie.acomptePct} %`))}
+      ${raw(ligneReglage('kit', 'Kit de quincaillerie', `${kit.length} articles · prix fixe ${fcfa(params.quincaillerie.prixKit)} / latrine · acompte ${params.quincaillerie.acomptePct} %`))}
       ${raw(ligneReglage('budget', 'Budget local par latrine', `Achats ${fcfa(b.achats)} · main-d’œuvre ${fcfa(b.mo)}`))}
     </div>
     <div class="carte plate" style="padding:8px 12px"><table class="tableau"><tbody>
@@ -65,7 +65,7 @@ export async function vueReglages(vue) {
     <label class="carte coche interrupteur">
       <input type="checkbox" id="opt-marge2" ${marge2 ? 'checked' : ''}>
       <span class="coche-txt"><strong>Marge personnelle (Marge 2)</strong>
-        <small>Ajoute un « prix terrain » à côté de chaque prix de base, pour suivre ce que tu gagnes vraiment. Visible seulement sur ce téléphone : jamais dans les rapports, factures, partages WhatsApp ou exports. Laisse désactivé si tu n’as de comptes à rendre à personne.</small></span>
+        <small>Ajoute un « prix terrain » à côté de chaque prix de base des achats locaux et de la main-d’œuvre (le kit garde son prix fixe), pour suivre ce que tu gagnes vraiment. Visible seulement sur ce téléphone : jamais dans les rapports, factures, partages WhatsApp ou exports. Laisse désactivé si tu n’as de comptes à rendre à personne.</small></span>
     </label>
 
     <div class="etiquette">Chantier</div>
@@ -88,7 +88,7 @@ export async function vueReglages(vue) {
   }));
   $('#opt-marge2', vue).onchange = async (e) => {
     await sauverParams({ ...etat.params, options: { ...etat.params.options, marge2: e.target.checked } });
-    toast(e.target.checked ? 'Marge 2 activée : saisis tes prix terrain dans Budget et Kit' : 'Marge 2 désactivée');
+    toast(e.target.checked ? 'Marge 2 activée : saisis tes prix terrain dans le budget local' : 'Marge 2 désactivée');
     rafraichir();
   };
   $('#defauts', vue).onclick = async () => {
@@ -204,7 +204,7 @@ function editKit() {
     titre: 'Kit de quincaillerie',
     items: etat.kit,
     colonnes: [{ cle: 'nom', label: 'Article' }, { cle: 'qte', label: 'Qté/kit', type: 'number', largeur: '76px' }],
-    entete: `${champsQuincaillerie(etat.params.quincaillerie, Boolean(etat.params.options?.marge2))}<div class="etiquette" style="margin-top:4px">Articles pour une latrine</div>`,
+    entete: `${champsQuincaillerie(etat.params.quincaillerie)}<div class="etiquette" style="margin-top:4px">Articles pour une latrine</div>`,
     nouveau: { nom: '', qte: 1, unite: 'u' },
     onSave: async (liste, d) => {
       await sauverKit(liste);
@@ -225,7 +225,7 @@ function editBudget() {
       { cle: 'cat', label: 'Catégorie', options: CATEGORIES_BUDGET },
     ],
     entete: `<p class="note">Dépenses prévues pour UNE latrine, hors kit de quincaillerie (main-d’œuvre, sable, gravier, transport…).${marge2
-      ? '<br><strong>Prix de base</strong> = Marge 1, celle des rapports. <strong>Prix terrain</strong> = ce que tu paies vraiment (Marge 2, personnelle). Laisse vide si c’est le même prix.'
+      ? '<br><strong>Prix de base</strong> = Marge 1, celle des rapports. <strong>Prix terrain</strong> = ce que tu paies vraiment (Marge 2, personnelle). Laisse vide si c’est le même prix. Le kit de quincaillerie garde son prix fixe.'
       : ''}</p><div style="height:12px"></div>`,
     nouveau: { nom: '', montant: 0, cat: 'materiaux' },
     onSave: async (liste) => {
