@@ -3,7 +3,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   statut, paiementsParLatrine, montantONG, cadence, finances, stock, comptesOuvriers, plusJoursOuvrables, alertes,
-  budgetLatrine, dateAchevement, acheveesSemaine, pointsConformes, compterStatuts, situationOfficielle,
+  budgetLatrine, dateAchevement, acheveesSemaine, pointsConformes, compterStatuts, situationOfficielle, ecartsTerrain,
 } from '../js/calc.js';
 import {
   PARAMS_DEFAUT, KIT_DEFAUT, BUDGET_DEFAUT, ETAPES, REFERENTIEL_DEFAUT, definirReferentiel, nomCourt, typeCourt,
@@ -132,6 +132,17 @@ describe('finances', () => {
     assert.equal(b.moTerrain, 41500);
     assert.equal(b.marge2, 48500 + 3000 + 2000);
     assert.equal(b.gainTerrain, 5000);
+  });
+  test('écarts de la Marge 2 : seulement les prix changés, en plus ou en moins', () => {
+    const budget = BUDGET_DEFAUT.map((x) => {
+      if (x.id === 'sable') return { ...x, montantTerrain: 15000 }; // payé moins cher : + 3 000
+      if (x.id === 'macon') return { ...x, montantTerrain: 22000 }; // payé plus cher : − 2 000
+      if (x.id === 'gravier') return { ...x, montantTerrain: 4000 }; // identique : ignoré
+      return x;
+    });
+    const e = ecartsTerrain(budget);
+    assert.deepEqual(e.map((x) => [x.id, x.ecart]), [['sable', 3000], ['macon', -2000]]);
+    assert.equal(e.reduce((s, x) => s + x.ecart, 0), budgetLatrine(params(), budget).gainTerrain);
   });
   test('un ancien « prix du kit obtenu » enregistré est ignoré : le kit reste à prix fixe', () => {
     const p = params();

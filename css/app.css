@@ -336,6 +336,8 @@ body.demarrage .vue { padding-bottom: calc(32px + env(safe-area-inset-bottom)); 
 .perso summary small { font-family: var(--texte); font-weight: 500; color: var(--encre-3); font-size: 12px; }
 .perso[open] summary small { display: none; }
 .perso .infos, .perso .aide { padding: 0 12px 12px; margin: 0; }
+.perso .infos { grid-template-columns: 1fr auto; }
+.perso .infos dd { white-space: nowrap; }
 .interrupteur input { accent-color: var(--orange); width: 26px; height: 26px; }
 .note { font-size: 13px; color: var(--encre-2); background: var(--info-l); border-radius: var(--r-s); padding: 10px 12px; }
 .sep { height: 1px; background: var(--ligne-2); margin: 14px 0; }

@@ -163,6 +163,18 @@ export function budgetLatrine(params, budgetLocal) {
 }
 
 /**
+ * Écarts de la Marge 2 : pour chaque prix terrain différent du prix de base,
+ * combien la TPE gagne en plus (écart > 0, payé moins cher) ou en moins (écart < 0).
+ */
+export function ecartsTerrain(budgetLocal) {
+  return budgetLocal
+    .filter((b) => b.montantTerrain !== '' && b.montantTerrain !== null && b.montantTerrain !== undefined)
+    .map((b) => ({ id: b.id, nom: b.nom, base: Number(b.montant) || 0, terrain: Number(b.montantTerrain) || 0 }))
+    .map((x) => ({ ...x, ecart: x.base - x.terrain }))
+    .filter((x) => x.ecart !== 0);
+}
+
+/**
  * Situation « officielle » pour un mandataire : uniquement les prix de base du budget et du contrat.
  * Ni caisse, ni dépenses réelles, ni prix terrain (Marge 2).
  */

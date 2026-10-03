@@ -58,7 +58,7 @@ export async function vueReglages(vue) {
       <tr><td>− Achats locaux</td><td class="d">${fcfa(b.achats)}</td></tr>
       <tr><td>− Main-d’œuvre</td><td class="d">${fcfa(b.mo)}</td></tr>
       <tr class="total"><td>${marge2 ? 'Marge 1 (officielle)' : 'Marge prévue'} / latrine</td><td class="d ${b.marge >= 0 ? 'ecart-pos' : 'ecart-neg'}">${fcfa(b.marge)}</td></tr>
-      ${raw(marge2 ? html`<tr><td>🔒 Marge 2 (prix terrain)</td><td class="d ${b.marge2 >= 0 ? 'ecart-pos' : 'ecart-neg'}">${fcfa(b.marge2)}</td></tr>` : '')}
+      ${raw(marge2 ? html`<tr><td>🔒 Marge 2 : écart des prix terrain</td><td class="d ${b.gainTerrain >= 0 ? 'ecart-pos' : 'ecart-neg'}">${b.gainTerrain >= 0 ? '+' : '−'} ${fcfa(Math.abs(b.gainTerrain))}</td></tr>` : '')}
     </tbody></table></div>
 
     <div class="etiquette">Options</div>

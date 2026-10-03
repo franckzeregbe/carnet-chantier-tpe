@@ -4,7 +4,7 @@ import { html, raw, fcfa, num, todayISO, dateFr, lundiDe, ajouterJours, lireForm
 import { ico } from '../ui.js';
 import { champsTPE, champsContrat, champsQuincaillerie, appliquerProfil, brancherLogo } from './profil.js';
 import {
-  paiementsParLatrine, statut, compterStatuts, acheveesSemaine, cadence, finances, stock, alertes, budgetLatrine,
+  paiementsParLatrine, statut, compterStatuts, acheveesSemaine, cadence, finances, stock, alertes, budgetLatrine, ecartsTerrain,
 } from '../calc.js';
 import { rafraichir } from '../app.js';
 
@@ -94,22 +94,31 @@ export async function vueAccueil(vue) {
         <dt><strong>${marge2 ? 'Marge 1 (officielle)' : 'Marge prévue'}</strong></dt><dd class="${b.marge >= 0 ? 'ecart-pos' : 'ecart-neg'}"><strong>${fcfa(b.marge)}</strong></dd>
         <dt>Sur ${total} latrines</dt><dd>${fcfa(b.marge * total)}</dd>
       </dl>
-      ${raw(marge2 ? blocMarge2(b, total) : '')}
+      ${raw(marge2 ? blocMarge2(etat.budget, total) : '')}
     </div>`;
 }
 
 /** Marge personnelle (prix terrain) : repliée par défaut, jamais reprise dans les rapports ni les partages. */
-function blocMarge2(b, total) {
+/** Montant signé : « + 3 000 F » (gain en plus) ou « − 2 000 F » (gain en moins). */
+const signe = (n) => `${n >= 0 ? '+' : '−'} ${fcfa(Math.abs(n))}`;
+
+/**
+ * Marge 2 (personnelle) : seulement l'écart en plus ou en moins dû aux prix terrain.
+ * Repliée par défaut, jamais reprise dans les rapports ni les partages.
+ */
+function blocMarge2(budget, total) {
+  const ecarts = ecartsTerrain(budget);
+  const parLatrine = ecarts.reduce((s, x) => s + x.ecart, 0);
+  const classe = (n) => (n >= 0 ? 'ecart-pos' : 'ecart-neg');
   return html`<details class="perso">
-    <summary><span>🔒 Ma marge personnelle — Marge 2</span><small>Toucher pour afficher</small></summary>
-    <dl class="infos">
-      <dt>Kit quincaillerie (prix fixe)</dt><dd>− ${fcfa(b.kit)}</dd>
-      <dt>Achats locaux (terrain)</dt><dd>− ${fcfa(b.achatsTerrain)}</dd>
-      <dt>Main-d’œuvre (terrain)</dt><dd>− ${fcfa(b.moTerrain)}</dd>
-      <dt><strong>Marge 2</strong></dt><dd class="${b.marge2 >= 0 ? 'ecart-pos' : 'ecart-neg'}"><strong>${fcfa(b.marge2)}</strong></dd>
-      <dt>Gain en plus / latrine</dt><dd class="${b.gainTerrain >= 0 ? 'ecart-pos' : 'ecart-neg'}">${b.gainTerrain >= 0 ? '+' : '−'} ${fcfa(Math.abs(b.gainTerrain))}</dd>
-      <dt>Marge 2 sur ${total} latrines</dt><dd>${fcfa(b.marge2 * total)}</dd>
-    </dl>
+    <summary><span>🔒 Marge 2 : ${ecarts.length ? signe(parLatrine) : '0 F'} / latrine</span><small>Détail</small></summary>
+    ${raw(ecarts.length
+      ? html`<dl class="infos">
+          ${raw(ecarts.map((x) => html`<dt>${x.nom} <small style="color:var(--encre-3)">(${fcfa(x.terrain)} au lieu de ${fcfa(x.base)})</small></dt><dd class="${classe(x.ecart)}">${signe(x.ecart)}</dd>`).join(''))}
+          <dt><strong>Par latrine</strong></dt><dd class="${classe(parLatrine)}"><strong>${signe(parLatrine)}</strong></dd>
+          <dt>Sur ${total} latrines</dt><dd class="${classe(parLatrine)}">${signe(parLatrine * total)}</dd>
+        </dl>`
+      : '<p class="aide">Aucun prix terrain différent. Saisis-les dans Réglages → Budget local.</p>')}
     <p class="aide">Visible seulement ici. Les rapports, factures et partages n’affichent que la Marge 1.</p>
   </details>`;
 }
