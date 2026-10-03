@@ -1,0 +1,17 @@
+{
+  "name": "Carnet de chantier TPE",
+  "short_name": "Chantier TPE",
+  "description": "Gestion de chantier hors ligne : rapports journaliers, latrines, équipe, achats, kits quincaillerie et finances. Une application Vision Noble.",
+  "lang": "fr",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F0EA",
+  "theme_color": "#0B2F4A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "carnet-chantier-tpe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Carnet de chantier hors ligne pour TPE (latrines familiales) — une application Vision Noble",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "check": "node scripts/check.js"
+  }
+}
