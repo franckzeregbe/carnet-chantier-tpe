@@ -2,6 +2,10 @@
 
 Application de gestion de chantier **hors ligne** pour les très petites entreprises (TPE) qui construisent des latrines familiales pour une ONG (par exemple dans le projet PASEA). Une application Vision Noble.
 
+**Adresse de l'application : https://franckzeregbe.github.io/carnet-chantier-tpe/**
+
+Pour l'installer sur Android : ouvrir l'adresse dans Chrome, puis menu ⋮ → « Installer l'application » (ou « Ajouter à l'écran d'accueil »). Ensuite elle fonctionne sans réseau.
+
 Chaque TPE l'installe sur son téléphone et saisit, au premier lancement, sa propre identité (nom, gérant, logo, Mobile Money), son ONG et son contrat. Les chiffres du modèle PASEA Hambol sont pré-remplis et modifiables : 325 000 F par latrine, avance de 50 %, 3 latrines par semaine, kit de quincaillerie à 196 500 F.
 
 ## Fonctions
