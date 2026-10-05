@@ -1,6 +1,6 @@
 // État de l'application en mémoire, synchronisé avec IndexedDB.
 import { db, STORES } from './db.js';
-import { PARAMS_DEFAUT, KIT_DEFAUT, BUDGET_DEFAUT, definirReferentiel } from './data.js';
+import { PARAMS_DEFAUT, KIT_DEFAUT, BUDGET_DEFAUT, definirReferentiel, prixDuKit } from './data.js';
 import { uid } from './util.js';
 
 // Nom du store IndexedDB → clé dans l'état.
@@ -39,7 +39,26 @@ function fusion(defaut, sauve) {
   return out;
 }
 
+const VERSION_DONNEES = 2;
+
+/**
+ * Mises à jour des données déjà enregistrées sur un téléphone.
+ * v2 (oct. 2026) : nouveau kit de la quincaillerie avec prix par article (127 000 F / latrine).
+ * Un kit déjà personnalisé par la TPE n'est jamais remplacé.
+ */
+async function migrer() {
+  const version = await db.getKV('versionDonnees', 1);
+  if (version >= VERSION_DONNEES) return;
+  const kitPerso = await db.getKV('kit', null);
+  const params = await db.getKV('params', null);
+  if (!kitPerso && params?.quincaillerie) {
+    await db.setKV('params', { ...params, quincaillerie: { ...params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
+  }
+  await db.setKV('versionDonnees', VERSION_DONNEES);
+}
+
 export async function charger() {
+  await migrer();
   etat.params = fusion(PARAMS_DEFAUT, await db.getKV('params'));
   etat.kit = (await db.getKV('kit')) || structuredClone(KIT_DEFAUT);
   etat.budget = (await db.getKV('budget')) || structuredClone(BUDGET_DEFAUT);

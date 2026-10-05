@@ -28,7 +28,7 @@ export const PARAMS_DEFAUT = {
   },
   quincaillerie: {
     nom: '',
-    prixKit: 196500, // prix fixe arrêté avec la quincaillerie : il ne change pas pendant le chantier
+    prixKit: 127000, // = prixDuKit(kit) : recalculé à chaque modification du kit
     acomptePct: 50,
   },
   options: {
@@ -58,36 +58,38 @@ export const partAcompte = (p) => pourcentage(p.quincaillerie.acomptePct) / 100;
 export const nomONG = (p) => p.contrat.commanditaire || p.contrat.sigle || 'ONG commanditaire';
 
 // Kit par défaut (modèle PASEA Hambol) : « KITS DE MATÉRIELS, MATÉRIAUX ET CONSOMMABLES DE LA QUINCAILLERIE DÉDIÉE PROJET PASEA HAMBOL ».
-// Quantités pour UNE latrine.
+// Kit par défaut : « KIT DES CONSOMMABLES DE LA QUINCAILLERIE DÉDIÉE » (mise à jour d'octobre 2026).
+// Quantités pour UNE latrine ; le kit se commande par lot de 3 latrines. Tout est modifiable dans Réglages → Kit,
+// car la composition et les prix de la quincaillerie peuvent changer d'une commande à l'autre.
 export const KIT_DEFAUT = [
-  { id: 'satopan', nom: 'WC à SATOPAN', qte: 1, unite: 'u' },
-  { id: 'fer-regard', nom: 'Kit fer à béton n°8 (dallette regard)', qte: 1, unite: 'kit' },
-  { id: 'fer-fosses', nom: 'Kit fer à béton n°8 (dallettes fosses)', qte: 2, unite: 'kit' },
-  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u' },
-  { id: 'tole', nom: 'Tôle ordinaire ondulée', qte: 3, unite: 'feuille' },
-  { id: 'chevron', nom: 'Chevrons 6/4', qte: 3, unite: 'u' },
-  { id: 'ciment', nom: 'Ciment 50 kg CPA 42,5', qte: 8, unite: 'sac' },
-  { id: 'coude110', nom: 'Coude PVC 110', qte: 1, unite: 'u' },
-  { id: 'tuyau110', nom: 'Tuyau PVC 110', qte: 1, unite: 'barre' },
-  { id: 'tuyau75', nom: 'Tuyau PVC 75', qte: 1, unite: 'barre' },
-  { id: 'coude75', nom: 'Coude PVC 75', qte: 1, unite: 'u' },
-  { id: 'te75', nom: 'Té PVC 75', qte: 1, unite: 'u' },
-  { id: 'collier75', nom: 'Collier de fixation PVC 75', qte: 1, unite: 'u' },
-  { id: 'lavemain', nom: 'Lave-mains', qte: 1, unite: 'u' },
-  { id: 'brique-pleine', nom: 'Briques 12 pleines (lot de 35)', qte: 1, unite: 'lot' },
-  { id: 'brique-creuse', nom: 'Briques 12 creuses (lot de 120)', qte: 1, unite: 'lot' },
-  { id: 'claustra', nom: 'Claustras', qte: 2, unite: 'u' },
+  { id: 'fer8', nom: 'Barre de fer de 8', qte: 3, unite: 'u', prix: 2000 },
+  { id: 'tole', nom: 'Tôle ondulée ordinaire', qte: 3, unite: 'u', prix: 3000 },
+  { id: 'chevron', nom: 'Chevron 6/4', qte: 3, unite: 'u', prix: 2500 },
+  { id: 'ciment', nom: 'Ciment CPA 42,5 (sac de 50 kg)', qte: 8, unite: 'sac', prix: 6000 },
+  { id: 'coude110', nom: 'Coude PVC Ø 110', qte: 1, unite: 'u', prix: 1500 },
+  { id: 'tuyau110', nom: 'Tuyau PVC Ø 110', qte: 1, unite: 'barre', prix: 6500 },
+  { id: 'tuyau75', nom: 'Tuyau PVC Ø 75', qte: 0.5, unite: 'barre', prix: 5000 },
+  { id: 'coude75', nom: 'Coude PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
+  { id: 'te75', nom: 'Té PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
+  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u', prix: 27000 },
+  { id: 'wc', nom: 'WC complet', qte: 1, unite: 'u', prix: 17000 },
 ];
 
+/** Prix d'un kit pour une latrine = somme (quantité × prix unitaire). 0 si aucun prix n'est saisi. */
+export const prixDuKit = (kit) => Math.round(kit.reduce((s, a) => s + (Number(a.qte) || 0) * (Number(a.prix) || 0), 0));
+
 // Dépenses locales prévues par latrine, hors kit (base : DQE réel).
-// Claustras et lave-mains sont retirés car inclus dans le kit arrêté.
+// Lave-mains et claustras sont achetés sur place depuis qu'ils ne sont plus dans le kit.
 export const BUDGET_DEFAUT = [
   { id: 'sable', nom: 'Sable', montant: 18000, cat: 'materiaux' },
   { id: 'gravier', nom: 'Gravier', montant: 4000, cat: 'materiaux' },
   { id: 'planche', nom: 'Planche fond 12 ép. 4 cm', montant: 1500, cat: 'materiaux' },
   { id: 'colle', nom: 'Colle PVC Tangit', montant: 500, cat: 'materiaux' },
+  { id: 'claustras', nom: 'Claustras (2)', montant: 1000, cat: 'materiaux' },
   { id: 'pointes', nom: 'Pointes n°6 et n°10', montant: 1000, cat: 'materiaux' },
   { id: 'fil', nom: 'Fil de fer d’attache galva', montant: 2000, cat: 'materiaux' },
+  { id: 'support-lavemains', nom: 'Support de lave-mains', montant: 2000, cat: 'materiaux' },
+  { id: 'seau-lavemains', nom: 'Seau de lave-mains', montant: 3000, cat: 'materiaux' },
   { id: 'transport', nom: 'Transport matériaux', montant: 3000, cat: 'transport' },
   { id: 'macon', nom: 'Maçon', montant: 20000, cat: 'mo' },
   { id: 'plombier', nom: 'Plombier', montant: 5000, cat: 'mo' },

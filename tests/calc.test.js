@@ -6,7 +6,7 @@ import {
   budgetLatrine, dateAchevement, acheveesSemaine, pointsConformes, compterStatuts, situationOfficielle, ecartsTerrain,
 } from '../js/calc.js';
 import {
-  PARAMS_DEFAUT, KIT_DEFAUT, BUDGET_DEFAUT, ETAPES, REFERENTIEL_DEFAUT, definirReferentiel, nomCourt, typeCourt,
+  PARAMS_DEFAUT, KIT_DEFAUT, BUDGET_DEFAUT, ETAPES, REFERENTIEL_DEFAUT, definirReferentiel, nomCourt, typeCourt, prixDuKit,
 } from '../js/data.js';
 
 const params = (contrat = {}) => ({
@@ -111,13 +111,13 @@ describe('finances', () => {
     assert.equal(f.attenduONG, 162500);
     assert.equal(f.detteQuincaillerie, 389500);
   });
-  test('budget et marge par latrine avec le kit à 196 500 F', () => {
+  test('budget et marge par latrine avec le kit à 127 000 F', () => {
     const b = budgetLatrine(params(), BUDGET_DEFAUT);
-    assert.equal(b.kit, 196500);
-    assert.equal(b.local, 80000);
-    assert.equal(b.achats, 36500);
+    assert.equal(b.kit, 127000);
+    assert.equal(b.local, 86000);
+    assert.equal(b.achats, 42500);
     assert.equal(b.mo, 43500);
-    assert.equal(b.marge, 48500);
+    assert.equal(b.marge, 112000);
   });
   test('Marge 2 : prix terrain des achats et de la main-d’œuvre, kit à prix fixe', () => {
     const budget = BUDGET_DEFAUT.map((x) => {
@@ -126,11 +126,11 @@ describe('finances', () => {
       return x;
     });
     const b = budgetLatrine(params(), budget);
-    assert.equal(b.marge, 48500); // officielle, inchangée
-    assert.equal(b.kit, 196500); // le kit ne change jamais
-    assert.equal(b.achatsTerrain, 33500);
+    assert.equal(b.marge, 112000); // officielle, inchangée
+    assert.equal(b.kit, 127000); // le kit garde son prix
+    assert.equal(b.achatsTerrain, 39500);
     assert.equal(b.moTerrain, 41500);
-    assert.equal(b.marge2, 48500 + 3000 + 2000);
+    assert.equal(b.marge2, 112000 + 3000 + 2000);
     assert.equal(b.gainTerrain, 5000);
   });
   test('écarts de la Marge 2 : seulement les prix changés, en plus ou en moins', () => {
@@ -147,7 +147,7 @@ describe('finances', () => {
   test('un ancien « prix du kit obtenu » enregistré est ignoré : le kit reste à prix fixe', () => {
     const p = params();
     p.quincaillerie = { ...p.quincaillerie, prixKitTerrain: 150000 };
-    assert.equal(budgetLatrine(p, BUDGET_DEFAUT).marge2, 48500);
+    assert.equal(budgetLatrine(p, BUDGET_DEFAUT).marge2, 112000);
   });
   test('Marge 2 = Marge 1 tant qu’aucun prix terrain n’est saisi', () => {
     const b = budgetLatrine(params(), BUDGET_DEFAUT);
@@ -167,10 +167,10 @@ describe('situation officielle (mandataire)', () => {
       { sens: 'out', cat: 'materiaux', montant: 999999 },
     ];
     const s = situationOfficielle(lats, txs, p, budget);
-    assert.equal(s.marge, 48500);
+    assert.equal(s.marge, 112000);
     assert.deepEqual([s.demarrees, s.achevees], [3, 2]);
-    assert.equal(s.margeAchevee, 97000);
-    assert.equal(s.coutAchevee, 2 * 276500);
+    assert.equal(s.margeAchevee, 224000);
+    assert.equal(s.coutAchevee, 2 * 213000);
     assert.equal(s.recu, 487500);
     assert.ok(!('marge2' in s) && !('caisse' in s));
   });
@@ -186,6 +186,28 @@ describe('stock', () => {
     assert.equal(s.kitsEnAttente, 3);
     const ciment = s.articles.find((a) => a.id === 'ciment');
     assert.deepEqual([ciment.recu, ciment.sorti, ciment.dispo], [24, 10, 14]);
+  });
+});
+
+describe('kit modifiable', () => {
+  test('prix du kit = somme quantité × prix unitaire (127 000 F, 381 000 F le lot de 3)', () => {
+    assert.equal(prixDuKit(KIT_DEFAUT), 127000);
+    assert.equal(prixDuKit(KIT_DEFAUT) * 3, 381000);
+  });
+  test('un nouveau kit ne réécrit pas le stock des commandes passées', () => {
+    const ancien = [{ id: 'ciment', nom: 'Ciment', qte: 8 }, { id: 'brique', nom: 'Briques', qte: 1 }];
+    const nouveau = [{ id: 'ciment', nom: 'Ciment', qte: 10 }];
+    const commandes = [{ nbKits: 3, livre: true, articles: ancien }, { nbKits: 3, livre: true }];
+    const lats = [latrine('a', 1, '2026-10-01', { kitAffecte: '2026-10-01', kitArticles: ancien })];
+    const s = stock(nouveau, commandes, lats, []);
+    const ciment = s.articles.find((x) => x.id === 'ciment');
+    const brique = s.articles.find((x) => x.id === 'brique');
+    assert.deepEqual([ciment.recu, ciment.sorti, ciment.dispo], [3 * 8 + 3 * 10, 8, 46]);
+    assert.deepEqual([brique.recu, brique.sorti, brique.dispo], [3, 1, 2]); // ancien article encore en stock : toujours affiché
+  });
+  test('quantités décimales (½ tuyau PVC Ø 75 par latrine)', () => {
+    const s = stock(KIT_DEFAUT, [{ nbKits: 3, livre: true }], [], []);
+    assert.equal(s.articles.find((x) => x.id === 'tuyau75').recu, 1.5);
   });
 });
 

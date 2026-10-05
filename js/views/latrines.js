@@ -277,7 +277,9 @@ export async function vueFicheLatrine(vue, id) {
       const dispo = stock(etat.kit, etat.commandes, etat.latrines, etat.mouvements).kitsDispo;
       if (dispo <= 0 && !(await confirmer('Aucun kit livré en stock. Affecter quand même ?', 'Affecter'))) return;
     }
-    await maj({ kitAffecte: l.kitAffecte ? null : todayISO() }, l.kitAffecte ? 'Kit remis en stock' : 'Kit affecté à la latrine');
+    // On garde la composition du kit sorti du stock (le kit de la quincaillerie peut changer ensuite).
+    const kitArticles = l.kitAffecte ? null : etat.kit.map(({ id, nom, qte, unite }) => ({ id, nom, qte, unite }));
+    await maj({ kitAffecte: l.kitAffecte ? null : todayISO(), kitArticles }, l.kitAffecte ? 'Kit remis en stock' : 'Kit affecté à la latrine');
   };
   $$('[data-qc]', vue).forEach((b) => (b.onclick = () => formControle(l, b.dataset.qc)));
   $('#ajout-defaut', vue).onclick = (e) => { e.preventDefault(); formDefaut(l); };

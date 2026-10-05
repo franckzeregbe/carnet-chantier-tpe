@@ -1,6 +1,6 @@
 // Kits de la quincaillerie dédiée : commandes, livraisons, paiements, stock par article.
 import { etat, enregistrer, supprimer } from '../store.js';
-import { html, raw, fcfa, num, todayISO, dateFr, toast, $, $$ } from '../util.js';
+import { html, raw, fcfa, num, quantite, todayISO, dateFr, toast, $, $$ } from '../util.js';
 import { ico, champ, input, select, textarea, segment, feuille, vide } from '../ui.js';
 import { stock, finances } from '../calc.js';
 import { partAcompte } from '../data.js';
@@ -47,13 +47,19 @@ export async function vueStock(vue) {
     <div class="carte plate defile" style="padding:6px 12px">
       <table class="tableau">
         <thead><tr><th>Article</th><th class="d">/kit</th><th class="d">Reçu</th><th class="d">Sorti</th><th class="d">Stock</th></tr></thead>
-        <tbody>${raw(st.articles.map((a) => html`<tr><td>${a.nom}</td><td class="d">${a.qte}</td><td class="d">${num(a.recu)}</td><td class="d">${num(a.sorti)}</td><td class="d ${a.bas ? 'bas' : ''}">${num(a.dispo)}</td></tr>`).join(''))}</tbody>
+        <tbody>${raw(st.articles.map((a) => html`<tr><td>${a.nom}</td><td class="d">${a.actuel ? quantite(a.qte) : '—'}</td><td class="d">${quantite(a.recu)}</td><td class="d">${quantite(a.sorti)}</td><td class="d ${a.bas ? 'bas' : ''}">${quantite(a.dispo)}</td></tr>`).join(''))}</tbody>
       </table>
     </div>
 
-    <div class="etiquette">Composition du kit <span>prix fixe ${fcfa(prixKit)} / latrine</span></div>
-    <div class="carte plate"><p style="margin:0;color:var(--encre-2);font-size:14px">${kit.map((a) => `${a.qte} × ${a.nom}`).join(' · ')}</p>
-      <a class="btn btn-petit" href="#/reglages" style="margin-top:12px">Modifier le kit et le prix</a></div>
+    <div class="etiquette">Kit actuel <span>${fcfa(prixKit)} / latrine · ${fcfa(prixKit * 3)} le lot de 3</span></div>
+    <div class="carte plate defile" style="padding:6px 12px">
+      <table class="tableau">
+        <thead><tr><th>Article</th><th class="d">Qté</th><th class="d">P.U.</th><th class="d">Montant</th></tr></thead>
+        <tbody>${raw(kit.map((a) => html`<tr><td>${a.nom}</td><td class="d">${quantite(a.qte)}</td><td class="d">${a.prix ? fcfa(a.prix) : '—'}</td><td class="d">${a.prix ? fcfa((Number(a.qte) || 0) * a.prix) : '—'}</td></tr>`).join(''))}
+        <tr class="total"><td colspan="3">Prix d’un kit (1 latrine)</td><td class="d">${fcfa(prixKit)}</td></tr></tbody>
+      </table>
+      <a class="btn btn-petit" href="#/reglages" style="margin:10px 0 6px">Modifier les articles et les prix</a>
+    </div>
 
     ${raw(mouvements.length ? html`<div class="etiquette">Mouvements manuels</div>
       <div class="liste">${raw(mouvements.map((m) => html`<button class="ligne" data-mvt="${m.id}">
@@ -109,6 +115,8 @@ function formCommande(c = null) {
       if (!(d.nbKits > 0)) { toast('Nombre de kits invalide', 'err'); return false; }
       const rec = await enregistrer('commandes', {
         ...x, ...d, prixUnitaire: prix, montant: d.nbKits * prix, dateLivraison: d.livre ? d.dateLivraison : '',
+        // Composition du kit au jour de la commande : un futur changement de kit ne la modifie pas.
+        articles: x.articles || etat.kit.map(({ id, nom, qte, unite, prix: pu }) => ({ id, nom, qte, unite, prix: pu })),
       });
       toast(c ? 'Commande mise à jour' : 'Commande enregistrée');
       rafraichir();

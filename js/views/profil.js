@@ -1,8 +1,8 @@
 // Champs du profil (TPE, contrat avec l'ONG, quincaillerie), partagés entre le premier lancement et les Réglages.
-import { html, raw, esc, initiales, toast, $ } from '../util.js';
+import { html, raw, esc, initiales, toast, fcfa, $ } from '../util.js';
 import { champ, input, select } from '../ui.js';
-import { MODES_PAIEMENT } from '../data.js';
-import { logoEnDataURL } from '../store.js';
+import { MODES_PAIEMENT, prixDuKit } from '../data.js';
+import { etat, logoEnDataURL } from '../store.js';
 
 /** Pastille du logo : l'image si elle existe, sinon les initiales de la TPE. */
 export function pastilleLogo(tpe, cls = 'logo-tpe') {
@@ -60,14 +60,23 @@ export function champsContrat(c, t) {
 }
 
 /** Le prix du kit est fixe (arrêté avec la quincaillerie) : il ne change pas pendant le chantier. */
-export function champsQuincaillerie(q) {
+/**
+ * Quincaillerie. Le prix du kit est calculé à partir des articles (quantité × prix unitaire) ;
+ * il n'est saisi à la main que si aucun article n'a de prix.
+ */
+export function champsQuincaillerie(q, kit = etat.kit) {
+  const calcule = prixDuKit(kit);
   return html`
     ${raw(champ('Nom de la quincaillerie', input('qnom', q.nom)))}
     <div class="deux">
-      ${raw(champ('Prix fixe d’un kit (F)', input('prixKit', q.prixKit, { type: 'money' })))}
+      ${raw(calcule
+    ? `<div class="champ"><span class="champ-label">Prix d’un kit (1 latrine)</span><div class="valeur-fixe" id="prix-kit">${esc(fcfa(calcule))}</div></div>`
+    : champ('Prix d’un kit (F)', input('prixKit', q.prixKit, { type: 'money' })))}
       ${raw(champ('Acompte à la commande (%)', input('acomptePct', q.acomptePct, { type: 'number' })))}
     </div>
-    <small class="aide" style="margin:-8px 0 14px">Prix arrêté avec la quincaillerie : il ne change pas pendant le chantier.</small>`;
+    <small class="aide" style="margin:-8px 0 14px">${calcule
+    ? raw(`Calculé à partir des articles : <span id="lot-kit">${esc(fcfa(calcule * 3))}</span> le lot de 3 latrines. Articles et prix modifiables dans Réglages → Kit.`)
+    : 'Indique le prix d’un kit, ou ajoute le prix de chaque article dans Réglages → Kit.'}</small>`;
 }
 
 /** Applique les champs saisis (quelle que soit la section) sur une copie des paramètres. */

@@ -6,7 +6,7 @@ Application de gestion de chantier **hors ligne** pour les très petites entrepr
 
 Pour l'installer sur Android : ouvrir l'adresse dans Chrome, puis menu ⋮ → « Installer l'application » (ou « Ajouter à l'écran d'accueil »). Ensuite elle fonctionne sans réseau.
 
-Chaque TPE l'installe sur son téléphone et saisit, au premier lancement, sa propre identité (nom, gérant, logo, Mobile Money), son ONG et son contrat. Les chiffres du modèle PASEA Hambol sont pré-remplis et modifiables : 325 000 F par latrine, avance de 50 %, 3 latrines par semaine, kit de quincaillerie à 196 500 F.
+Chaque TPE l'installe sur son téléphone et saisit, au premier lancement, sa propre identité (nom, gérant, logo, Mobile Money), son ONG et son contrat. Les chiffres du modèle PASEA Hambol sont pré-remplis et modifiables : 325 000 F par latrine, avance de 50 %, 3 latrines par semaine, kit de quincaillerie à 127 000 F par latrine (381 000 F le lot de 3).
 
 ## Fonctions
 
@@ -14,10 +14,10 @@ Chaque TPE l'installe sur son téléphone et saisit, au premier lancement, sa pr
 - **Latrines** : fiche par ménage (GPS, type, interface WC), étapes des travaux, contrôle qualité en 3 visites, défauts (48 h / 5 j), PV de réception, paiements de l'ONG (avance et solde calculés automatiquement).
 - **Journal** : rapport du jour (sites, étapes finies, équipe, matériaux, achat, incident, EPI, photos), partage WhatsApp, PDF, journal hebdomadaire.
 - **Argent** : entrées / sorties, Mobile Money, budget prévu vs réel, export CSV.
-- **Kits & stock** : commandes à la quincaillerie, acompte, livraisons, stock par article.
+- **Kits & stock** : kit entièrement modifiable (articles, quantité par latrine, prix unitaire ; prix du kit calculé automatiquement), commandes à la quincaillerie, acompte, livraisons, stock par article. Chaque commande garde le kit et le prix de sa date.
 - **Équipe** : ouvriers payés par latrine ou par jour, présences tirées du journal.
 - **Factures**, **rapports PDF** (aperçu A4, enregistrement en PDF sans en-tête du navigateur, titres de colonnes et pied de page répétés sur chaque page), **sauvegarde / restauration**.
-- **Marge 1 / Marge 2** : la Marge 1 (prix de base) est la marge officielle, reprise dans les rapports. La Marge 2 (option dans Réglages) utilise les prix réellement obtenus sur le terrain pour les achats locaux et la main-d'œuvre — le kit de quincaillerie garde toujours son prix fixe ; elle n'apparaît que sur l'accueil, repliée, et jamais dans les PDF, factures, partages WhatsApp ou exports.
+- **Marge 1 / Marge 2** : la Marge 1 (prix de base) est la marge officielle, reprise dans les rapports. La Marge 2 (option dans Réglages) utilise les prix réellement obtenus sur le terrain pour les achats locaux et la main-d'œuvre — le kit de quincaillerie garde son prix ; elle n'apparaît que sur l'accueil, repliée, et jamais dans les PDF, factures, partages WhatsApp ou exports.
 - **Réglages — tout est modifiable** : TPE et logo, ONG et contrat, kit, budget, étapes des travaux, grille de contrôle qualité, types de latrines, interfaces WC.
 
 ## Technique

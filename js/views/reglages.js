@@ -3,7 +3,7 @@ import { etat, enregistrer, sauverParams, sauverKit, sauverBudget, sauverReferen
 import { html, raw, fcfa, dateFr, toast, lireMontant, $, $$, uid } from '../util.js';
 import { ico, champ, input, select, feuille, confirmer } from '../ui.js';
 import {
-  nomONG, ETAPES, CONTROLES, TYPES_LATRINE, INTERFACES_WC, KIT_DEFAUT, BUDGET_DEFAUT, REFERENTIEL_DEFAUT, referentielActuel,
+  nomONG, ETAPES, CONTROLES, TYPES_LATRINE, INTERFACES_WC, KIT_DEFAUT, BUDGET_DEFAUT, REFERENTIEL_DEFAUT, referentielActuel, prixDuKit,
 } from '../data.js';
 import { budgetLatrine, dateAchevement } from '../calc.js';
 import { rafraichir } from '../app.js';
@@ -94,6 +94,7 @@ export async function vueReglages(vue) {
   $('#defauts', vue).onclick = async () => {
     if (!(await confirmer('Remplacer le kit, le budget, les étapes et les contrôles qualité par le modèle PASEA d’origine ?', 'Rétablir'))) return;
     await sauverKit(structuredClone(KIT_DEFAUT));
+    await sauverParams({ ...etat.params, quincaillerie: { ...etat.params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
     await sauverBudget(structuredClone(BUDGET_DEFAUT));
     await sauverReferentiel(structuredClone(REFERENTIEL_DEFAUT));
     toast('Modèle PASEA rétabli');
@@ -141,7 +142,8 @@ function lignesHtml(items, colonnes, ordonnable) {
     : input(`${c.cle}_${i}`, it[c.cle], { type: c.type || 'text', placeholder: c.placeholder, vide: c.vide }));
   return items.map((it, i) => `<div class="deux ligne-edit${large ? ' large' : ''}" data-ligne style="grid-template-columns:${grille};align-items:end;gap:6px">
       ${colonnes.map((c, k) => {
-        const bloc = champ(i === 0 || (large && k === 0) ? c.label : '', controle(c, it, i));
+        // En disposition large (3 colonnes et plus), chaque article garde ses étiquettes : quantité et prix ne se confondent pas.
+        const bloc = champ(i === 0 || large ? c.label : '', controle(c, it, i));
         return large && k === 0 ? bloc.replace('<label class="champ"', '<label class="champ" style="grid-column:1/-1;margin-bottom:6px"') : bloc;
       }).join('')}
       ${ordonnable ? `<button type="button" class="btn-ico" data-monter="${i}" style="margin-bottom:16px" aria-label="Monter" ${i === 0 ? 'disabled' : ''}>↑</button>` : ''}
@@ -149,12 +151,13 @@ function lignesHtml(items, colonnes, ordonnable) {
     </div>`).join('');
 }
 
-function editeurLignes({ titre, items, colonnes, entete = '', ordonnable = false, nouveau, onSave }) {
+function editeurLignes({ titre, items, colonnes, entete = '', ordonnable = false, nouveau, onSave, surSaisie }) {
   let liste = items.map((x) => ({ ...x }));
   feuille({
     titre,
     corps: `${entete}<div id="lignes"></div>
-      <button type="button" class="btn btn-bloc" id="ajout-ligne">${ico('plus').v} Ajouter une ligne</button>`,
+      <button type="button" class="btn btn-bloc" id="ajout-ligne">${ico('plus').v} Ajouter une ligne</button>
+      ${surSaisie ? '<p class="note" id="total-lignes" style="margin-top:12px"></p>' : ''}`,
     onOuvert: (form) => {
       const relire = () => {
         liste = $$('[data-ligne]', form).map((_, i) => ({
@@ -190,6 +193,12 @@ function editeurLignes({ titre, items, colonnes, entete = '', ordonnable = false
         champs[champs.length - colonnes.length]?.focus();
       };
       form.relire = () => { relire(); return liste; };
+      if (surSaisie) {
+        const maj = () => surSaisie(form.relire(), form);
+        form.addEventListener('input', maj);
+        form.addEventListener('click', () => setTimeout(maj, 0)); // ajout / retrait de ligne
+        maj();
+      }
     },
     onValider: async (d, form) => {
       const propres = form.relire().filter((x) => x[colonnes[0].cle]);
@@ -199,16 +208,37 @@ function editeurLignes({ titre, items, colonnes, entete = '', ordonnable = false
   });
 }
 
+/**
+ * Kit de quincaillerie : articles, quantité par latrine et prix unitaire, tous modifiables
+ * (la quincaillerie change parfois sa liste ou ses prix). Le prix du kit est recalculé automatiquement ;
+ * les commandes déjà passées gardent le kit et le prix de leur date.
+ */
 function editKit() {
   editeurLignes({
     titre: 'Kit de quincaillerie',
     items: etat.kit,
-    colonnes: [{ cle: 'nom', label: 'Article' }, { cle: 'qte', label: 'Qté/kit', type: 'number', largeur: '76px' }],
-    entete: `${champsQuincaillerie(etat.params.quincaillerie)}<div class="etiquette" style="margin-top:4px">Articles pour une latrine</div>`,
-    nouveau: { nom: '', qte: 1, unite: 'u' },
+    colonnes: [
+      { cle: 'nom', label: 'Article' },
+      { cle: 'qte', label: 'Qté / latrine', type: 'number' },
+      { cle: 'prix', label: 'Prix unitaire (F)', type: 'money' },
+    ],
+    entete: `<p class="note">Quand la quincaillerie change ses articles ou ses prix, mets la liste à jour ici. Les commandes déjà passées gardent leur kit et leur prix.</p>
+      <div style="height:12px"></div>${champsQuincaillerie(etat.params.quincaillerie, etat.kit)}
+      <div class="etiquette" style="margin-top:4px">Articles pour une latrine</div>`,
+    nouveau: { nom: '', qte: 1, unite: 'u', prix: 0 },
+    surSaisie: (liste, form) => {
+      const prix = prixDuKit(liste);
+      const champ = $('#prix-kit', form);
+      const lot = $('#lot-kit', form);
+      if (champ) champ.textContent = fcfa(prix);
+      if (lot) lot.textContent = fcfa(prix * 3);
+      $('#total-lignes', form).innerHTML = `Prix du kit : <strong>${fcfa(prix)}</strong> par latrine · <strong>${fcfa(prix * 3)}</strong> le lot de 3`;
+    },
     onSave: async (liste, d) => {
       await sauverKit(liste);
-      await apres(appliquerProfil(etat.params, d), 'Kit mis à jour');
+      const params = appliquerProfil(etat.params, d);
+      const prix = prixDuKit(liste) || Number(params.quincaillerie.prixKit) || 0;
+      await apres({ ...params, quincaillerie: { ...params.quincaillerie, prixKit: prix } }, `Kit mis à jour : ${fcfa(prix)} par latrine`);
     },
   });
 }

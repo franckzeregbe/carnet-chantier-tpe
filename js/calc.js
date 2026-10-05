@@ -201,23 +201,39 @@ export function situationOfficielle(latrines, txs, params, budgetLocal) {
   };
 }
 
-/** Stock par article : entrées (kits livrés + entrées manuelles) − sorties (kits affectés + sorties manuelles). */
+/**
+ * Stock par article : entrées (kits livrés + entrées manuelles) − sorties (kits affectés + sorties manuelles).
+ * Chaque commande (`articles`) et chaque latrine (`kitArticles`) garde la composition du kit du jour :
+ * quand la quincaillerie change son kit, le passé n'est pas recalculé. Sans copie (anciennes données), le kit actuel sert.
+ */
 export function stock(kit, commandes, latrines, mouvements) {
-  const kitsLivres = somme(commandes.filter((c) => c.livre), (c) => c.nbKits);
-  const kitsAffectes = latrines.filter((l) => l.kitAffecte).length;
-  const articles = kit.map((a) => {
-    const entreesMan = somme(mouvements.filter((m) => m.article === a.id && m.sens === 'in'), (m) => m.qte);
-    const sortiesMan = somme(mouvements.filter((m) => m.article === a.id && m.sens === 'out'), (m) => m.qte);
-    const recu = kitsLivres * a.qte + entreesMan;
-    const sorti = kitsAffectes * a.qte + sortiesMan;
-    return { ...a, recu, sorti, dispo: recu - sorti, bas: recu - sorti < a.qte };
-  });
+  const livrees = commandes.filter((c) => c.livre);
+  const affectees = latrines.filter((l) => l.kitAffecte);
+  const parArticle = new Map();
+  const ligne = (a) => {
+    if (!parArticle.has(a.id)) parArticle.set(a.id, { id: a.id, nom: a.nom || a.id, unite: a.unite || 'u', qte: 0, actuel: false, recu: 0, sorti: 0 });
+    return parArticle.get(a.id);
+  };
+  for (const a of kit) Object.assign(ligne(a), { nom: a.nom, unite: a.unite, qte: Number(a.qte) || 0, prix: a.prix, actuel: true });
+  for (const c of livrees) for (const a of c.articles || kit) ligne(a).recu += (Number(a.qte) || 0) * (Number(c.nbKits) || 0);
+  for (const l of affectees) for (const a of l.kitArticles || kit) ligne(a).sorti += Number(a.qte) || 0;
+  for (const m of mouvements) {
+    const l = ligne({ id: m.article });
+    if (m.sens === 'in') l.recu += Number(m.qte) || 0;
+    else l.sorti += Number(m.qte) || 0;
+  }
+  const arrondi = (n) => Math.round(n * 100) / 100;
+  const articles = [...parArticle.values()]
+    .filter((a) => a.actuel || a.recu || a.sorti)
+    .map((a) => ({ ...a, recu: arrondi(a.recu), sorti: arrondi(a.sorti), dispo: arrondi(a.recu - a.sorti), bas: a.actuel && a.recu - a.sorti < a.qte }));
+
+  const kitsLivres = somme(livrees, (c) => c.nbKits);
   const kitsCommandes = somme(commandes, (c) => c.nbKits);
   return {
     kitsCommandes,
     kitsLivres,
-    kitsAffectes,
-    kitsDispo: kitsLivres - kitsAffectes,
+    kitsAffectes: affectees.length,
+    kitsDispo: kitsLivres - affectees.length,
     kitsEnAttente: kitsCommandes - kitsLivres,
     articles,
   };

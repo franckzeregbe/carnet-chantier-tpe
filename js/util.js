@@ -5,6 +5,10 @@ const nf = new Intl.NumberFormat('fr-FR');
 export const fcfa = (n) => `${nf.format(Math.round(Number(n) || 0))} F`;
 export const num = (n) => nf.format(Math.round(Number(n) || 0));
 
+const nfQte = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
+/** Quantité avec décimales éventuelles (0,5 tuyau). */
+export const quantite = (n) => nfQte.format(Number(n) || 0);
+
 export const uid = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
