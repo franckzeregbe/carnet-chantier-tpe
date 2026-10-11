@@ -1,11 +1,11 @@
 // Service worker : met toute l'application en cache pour fonctionner sans réseau.
-const VERSION = 'vn-chantier-v7';
+const VERSION = 'vn-chantier-v8';
 const FICHIERS = [
   './',
   'index.html',
   'manifest.webmanifest',
-  'css/app.css?v=7',
-  'js/app.js?v=7',
+  'css/app.css?v=8',
+  'js/app.js?v=8',
   'js/util.js',
   'js/db.js',
   'js/data.js',

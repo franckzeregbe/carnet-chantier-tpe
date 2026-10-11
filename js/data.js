@@ -28,7 +28,7 @@ export const PARAMS_DEFAUT = {
   },
   quincaillerie: {
     nom: '',
-    prixKit: 127000, // = prixDuKit(kit) : recalculé à chaque modification du kit
+    prixKit: 135600, // = prixDuKit(kit) : recalculé à chaque modification du kit
     acomptePct: 50,
   },
   options: {
@@ -58,21 +58,21 @@ export const partAcompte = (p) => pourcentage(p.quincaillerie.acomptePct) / 100;
 export const nomONG = (p) => p.contrat.commanditaire || p.contrat.sigle || 'ONG commanditaire';
 
 // Kit par défaut (modèle PASEA Hambol) : « KITS DE MATÉRIELS, MATÉRIAUX ET CONSOMMABLES DE LA QUINCAILLERIE DÉDIÉE PROJET PASEA HAMBOL ».
-// Kit par défaut : « KIT DES CONSOMMABLES DE LA QUINCAILLERIE DÉDIÉE » (mise à jour d'octobre 2026).
+// Kit par défaut : « Quincaillerie dédiée — prix de vente du kit » (région du Hambol, octobre 2026).
 // Quantités pour UNE latrine ; le kit se commande par lot de 3 latrines. Tout est modifiable dans Réglages → Kit,
 // car la composition et les prix de la quincaillerie peuvent changer d'une commande à l'autre.
 export const KIT_DEFAUT = [
-  { id: 'fer8', nom: 'Barre de fer de 8', qte: 3, unite: 'u', prix: 2000 },
-  { id: 'tole', nom: 'Tôle ondulée ordinaire', qte: 3, unite: 'u', prix: 3000 },
+  { id: 'fer8', nom: 'Barre de fer à béton de 8', qte: 3, unite: 'u', prix: 2500 },
+  { id: 'tole', nom: 'Tôle ondulée ordinaire', qte: 3, unite: 'u', prix: 3500 },
   { id: 'chevron', nom: 'Chevron 6/4', qte: 3, unite: 'u', prix: 2500 },
-  { id: 'ciment', nom: 'Ciment CPA 42,5 (sac de 50 kg)', qte: 8, unite: 'sac', prix: 6000 },
+  { id: 'ciment', nom: 'Ciment CPA 42,5 (sac de 50 kg)', qte: 8, unite: 'sac', prix: 6700 },
   { id: 'coude110', nom: 'Coude PVC Ø 110', qte: 1, unite: 'u', prix: 1500 },
   { id: 'tuyau110', nom: 'Tuyau PVC Ø 110', qte: 1, unite: 'barre', prix: 6500 },
-  { id: 'tuyau75', nom: 'Tuyau PVC Ø 75', qte: 0.5, unite: 'barre', prix: 5000 },
+  { id: 'tuyau75', nom: 'Tuyau PVC Ø 75 (½ barre = 3 m)', qte: 1, unite: 'u', prix: 2500 },
   { id: 'coude75', nom: 'Coude PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
   { id: 'te75', nom: 'Té PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
-  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u', prix: 27000 },
-  { id: 'wc', nom: 'WC complet', qte: 1, unite: 'u', prix: 17000 },
+  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u', prix: 26000 },
+  { id: 'wc', nom: 'WC complet préfabriqué', qte: 1, unite: 'u', prix: 18000 },
 ];
 
 /** Prix d'un kit pour une latrine = somme (quantité × prix unitaire). 0 si aucun prix n'est saisi. */

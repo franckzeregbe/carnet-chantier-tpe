@@ -39,20 +39,34 @@ function fusion(defaut, sauve) {
   return out;
 }
 
-const VERSION_DONNEES = 2;
+const VERSION_DONNEES = 3;
+
+// Kits par défaut des versions précédentes ([id, quantité, prix]) : s'ils sont restés tels quels sur le téléphone,
+// ils sont remplacés par le kit par défaut actuel.
+const ANCIENS_KITS = [
+  // v2 — 127 000 F
+  [['fer8', 3, 2000], ['tole', 3, 3000], ['chevron', 3, 2500], ['ciment', 8, 6000], ['coude110', 1, 1500], ['tuyau110', 1, 6500],
+    ['tuyau75', 0.5, 5000], ['coude75', 1, 1000], ['te75', 1, 1000], ['porte', 1, 27000], ['wc', 1, 17000]],
+];
+
+const signatureKit = (kit) => JSON.stringify(kit.map((a) => [a.id, Number(a.qte) || 0, Number(a.prix) || 0]));
 
 /**
  * Mises à jour des données déjà enregistrées sur un téléphone.
- * v2 (oct. 2026) : nouveau kit de la quincaillerie avec prix par article (127 000 F / latrine).
- * Un kit déjà personnalisé par la TPE n'est jamais remplacé.
+ * v2 puis v3 (oct. 2026) : nouveaux prix de vente du kit de la quincaillerie (135 600 F / latrine).
+ * Un kit que la TPE a personnalisé n'est jamais remplacé ; les commandes passées gardent leur prix.
  */
 async function migrer() {
   const version = await db.getKV('versionDonnees', 1);
   if (version >= VERSION_DONNEES) return;
-  const kitPerso = await db.getKV('kit', null);
+  const kitEnregistre = await db.getKV('kit', null);
+  const kitInchange = !kitEnregistre || ANCIENS_KITS.some((k) => JSON.stringify(k) === signatureKit(kitEnregistre));
   const params = await db.getKV('params', null);
-  if (!kitPerso && params?.quincaillerie) {
-    await db.setKV('params', { ...params, quincaillerie: { ...params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
+  if (kitInchange) {
+    if (kitEnregistre) await db.del('kv', 'kit'); // le kit par défaut actuel s'applique
+    if (params?.quincaillerie) {
+      await db.setKV('params', { ...params, quincaillerie: { ...params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
+    }
   }
   await db.setKV('versionDonnees', VERSION_DONNEES);
 }
