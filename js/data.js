@@ -1,6 +1,9 @@
 // Référentiel métier. L'identité de la TPE et de l'ONG est saisie au premier lancement ;
 // les chiffres par défaut sont ceux du modèle PASEA Hambol, tous modifiables dans « Réglages ».
 
+/** Numéro de version de l'application : doit suivre VERSION dans sw.js (vérifié par `npm run check`). */
+export const VERSION_APP = 9;
+
 export const PARAMS_DEFAUT = {
   tpe: {
     nom: '',

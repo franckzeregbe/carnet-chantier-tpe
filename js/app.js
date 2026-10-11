@@ -11,6 +11,7 @@ import { vueEquipe } from './views/equipe.js';
 import { vuePlus, vueSauvegarde, vueFactures, vueRapports } from './views/plus.js';
 import { vueReglages } from './views/reglages.js';
 import { pastilleLogo } from './views/profil.js';
+import { installerMisesAJour } from './maj.js';
 
 const ROUTES = [
   [/^\/?$/, 'accueil', vueAccueil],
@@ -97,16 +98,6 @@ function afficherErreurBase(err) {
   $('#reessayer').onclick = () => location.reload();
 }
 
-function proposerRechargement() {
-  if ($('#maj')) return;
-  const bandeau = document.createElement('div');
-  bandeau.id = 'maj';
-  bandeau.className = 'bandeau-maj';
-  bandeau.innerHTML = '<span>Nouvelle version de l’application installée.</span><button class="btn btn-petit btn-plein">Recharger</button>';
-  bandeau.querySelector('button').onclick = () => location.reload();
-  document.body.appendChild(bandeau);
-}
-
 async function demarrer() {
   try {
     await charger();
@@ -124,12 +115,7 @@ async function demarrer() {
   demanderPersistance();
   nettoyerPhotos().catch((e) => console.warn('Nettoyage des photos impossible', e));
 
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    // Une nouvelle version vient de s'installer : on propose de recharger (sans forcer, pour ne pas perdre une saisie).
-    const avaitVersion = Boolean(navigator.serviceWorker.controller);
-    navigator.serviceWorker.addEventListener('controllerchange', () => avaitVersion && proposerRechargement());
-    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker non installé', e));
-  }
+  installerMisesAJour();
 }
 
 demarrer();

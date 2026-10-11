@@ -3,7 +3,8 @@ import { etat, exporterTout, importerTout, toutEffacer, marquerConfigure, marque
 import { db } from '../db.js';
 import { html, raw, fcfa, num, todayISO, dateFr, lundiDe, ajouterJours, toast, telechargerFichier, initiales, $, $$ } from '../util.js';
 import { ico, puces, confirmer, vide } from '../ui.js';
-import { sigleONG } from '../data.js';
+import { sigleONG, VERSION_APP } from '../data.js';
+import { verifierMiseAJour } from '../maj.js';
 import { paiementsParLatrine, statut } from '../calc.js';
 import { rafraichir } from '../app.js';
 import {
@@ -35,7 +36,24 @@ export async function vuePlus(vue) {
       <button class="btn btn-plein btn-bloc" id="installer">${ico('save')} Installer l’application</button>
       <p class="aide" id="aide-install" hidden>Sur Android (Chrome) : menu ⋮ → « Ajouter à l’écran d’accueil ». Sur iPhone (Safari) : bouton Partager → « Sur l’écran d’accueil ».</p>
     </div>`)}
+    <div class="carte plate" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span><strong>Version ${VERSION_APP}</strong><br><small style="color:var(--encre-2)">L’app se met à jour seule quand il y a du réseau.</small></span>
+      <button class="btn btn-petit" id="chercher-maj">Rechercher une mise à jour</button>
+    </div>
     <p class="aide" style="text-align:center">Carnet de chantier TPE · une application Vision Noble<br>Données stockées uniquement dans ce téléphone</p>`;
+
+  $('#chercher-maj', vue).onclick = async (e) => {
+    e.target.disabled = true;
+    const resultat = await verifierMiseAJour({ force: true });
+    e.target.disabled = false;
+    const messages = {
+      nouvelle: ['Nouvelle version trouvée : installation en cours, puis touche « Recharger »', 'ok'],
+      'a-jour': [`L’application est à jour (version ${VERSION_APP})`, 'ok'],
+      'hors-ligne': ['Pas de réseau : réessaie quand tu as une connexion', 'err'],
+      indisponible: ['Mise à jour automatique indisponible sur ce navigateur', 'err'],
+    };
+    toast(...messages[resultat]);
+  };
 
   const btn = $('#installer', vue);
   if (btn) {

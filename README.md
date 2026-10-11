@@ -36,4 +36,6 @@ npm test
 npm run check
 ```
 
-À chaque mise en ligne : incrémenter `VERSION` dans `sw.js` et le `?v=` dans `index.html` (et dans la liste de `sw.js`).
+À chaque mise en ligne : incrémenter `VERSION_APP` dans `js/data.js`, `VERSION` dans `sw.js` et le `?v=` dans `index.html` (et dans la liste de `sw.js`). `npm run check` vérifie que tout concorde.
+
+L'app installée cherche les mises à jour au démarrage, au retour au premier plan et au retour du réseau ; le bouton « Rechercher une mise à jour » (écran Plus) force la vérification. Quand le kit par défaut change, ajouter l'ancien à `ANCIENS_KITS` dans `js/store.js` et incrémenter `VERSION_DONNEES` : les téléphones dont le kit n'a pas été personnalisé passent alors au nouveau.

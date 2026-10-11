@@ -31,5 +31,12 @@ for (const ref of index.matchAll(/(?:href|src)="((?:css|js)\/[^"]+)"/g)) {
   }
 }
 
+const versionApp = readFileSync('js/data.js', 'utf8').match(/VERSION_APP = (\d+)/)?.[1];
+const versionSW = sw.match(/vn-chantier-v(\d+)/)?.[1];
+if (versionApp !== versionSW) {
+  erreurs += 1;
+  console.error(`✗ VERSION_APP (${versionApp}) dans js/data.js ≠ VERSION (${versionSW}) dans sw.js`);
+}
+
 console.log(erreurs ? `${erreurs} problème(s)` : `${fichiers.length} fichiers OK, cache hors ligne complet`);
 process.exit(erreurs ? 1 : 0);

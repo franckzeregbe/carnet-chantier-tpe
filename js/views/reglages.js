@@ -20,6 +20,8 @@ export async function vueReglages(vue) {
   const b = budgetLatrine(params, budget);
   const c = params.contrat;
   const marge2 = Boolean(params.options?.marge2);
+  const signature = (liste) => JSON.stringify(liste.map((a) => [a.nom, Number(a.qte) || 0, Number(a.prix) || 0]));
+  const kitDifferent = signature(kit) !== signature(KIT_DEFAUT);
   vue.innerHTML = html`
     <a class="retour" href="#/plus">${ico('back')} Plus</a>
     <div class="titre-vue"><div><span class="sur">Tout est modifiable</span><h1>Réglages</h1></div></div>
@@ -52,6 +54,10 @@ export async function vueReglages(vue) {
       ${raw(ligneReglage('kit', 'Kit de quincaillerie', `${kit.length} articles · prix fixe ${fcfa(params.quincaillerie.prixKit)} / latrine · acompte ${params.quincaillerie.acomptePct} %`))}
       ${raw(ligneReglage('budget', 'Budget local par latrine', `Achats ${fcfa(b.achats)} · main-d’œuvre ${fcfa(b.mo)}`))}
     </div>
+    ${raw(kitDifferent ? html`<div class="carte plate" style="border-color:var(--orange)">
+      <p style="margin:0 0 10px;font-size:14px">Ton kit (<strong>${fcfa(params.quincaillerie.prixKit)}</strong>) est différent du dernier kit officiel de la quincaillerie (<strong>${fcfa(prixDuKit(KIT_DEFAUT))}</strong> par latrine).</p>
+      <button class="btn btn-navy btn-bloc" id="kit-officiel">Appliquer le kit officiel</button>
+    </div>` : '')}
     <div class="carte plate" style="padding:8px 12px"><table class="tableau"><tbody>
       <tr><td>Prix payé par l’ONG</td><td class="d">${fcfa(b.prix)}</td></tr>
       <tr><td>− Kit</td><td class="d">${fcfa(b.kit)}</td></tr>
@@ -91,6 +97,16 @@ export async function vueReglages(vue) {
     toast(e.target.checked ? 'Marge 2 activée : saisis tes prix terrain dans le budget local' : 'Marge 2 désactivée');
     rafraichir();
   };
+  const boutonKit = $('#kit-officiel', vue);
+  if (boutonKit) {
+    boutonKit.onclick = async () => {
+      if (!(await confirmer(`Remplacer ton kit par le kit officiel à ${fcfa(prixDuKit(KIT_DEFAUT))} ? Les commandes déjà passées gardent leur prix.`, 'Appliquer'))) return;
+      await sauverKit(structuredClone(KIT_DEFAUT));
+      await sauverParams({ ...etat.params, quincaillerie: { ...etat.params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
+      toast(`Kit officiel appliqué : ${fcfa(prixDuKit(KIT_DEFAUT))} par latrine`);
+      rafraichir();
+    };
+  }
   $('#defauts', vue).onclick = async () => {
     if (!(await confirmer('Remplacer le kit, le budget, les étapes et les contrôles qualité par le modèle PASEA d’origine ?', 'Rétablir'))) return;
     await sauverKit(structuredClone(KIT_DEFAUT));

@@ -39,35 +39,57 @@ function fusion(defaut, sauve) {
   return out;
 }
 
-const VERSION_DONNEES = 3;
+const VERSION_DONNEES = 4;
 
-// Kits par défaut des versions précédentes ([id, quantité, prix]) : s'ils sont restés tels quels sur le téléphone,
-// ils sont remplacés par le kit par défaut actuel.
+// Kits par défaut des versions précédentes ([id, quantité, prix]) : s'ils sont restés tels quels sur le téléphone
+// (même enregistrés sans changement), ils sont remplacés par le kit par défaut actuel.
 const ANCIENS_KITS = [
+  // v1 — 196 500 F, 17 articles sans prix unitaire
+  [['satopan', 1, 0], ['fer-regard', 1, 0], ['fer-fosses', 2, 0], ['porte', 1, 0], ['tole', 3, 0], ['chevron', 3, 0], ['ciment', 8, 0],
+    ['coude110', 1, 0], ['tuyau110', 1, 0], ['tuyau75', 1, 0], ['coude75', 1, 0], ['te75', 1, 0], ['collier75', 1, 0], ['lavemain', 1, 0],
+    ['brique-pleine', 1, 0], ['brique-creuse', 1, 0], ['claustra', 2, 0]],
   // v2 — 127 000 F
   [['fer8', 3, 2000], ['tole', 3, 3000], ['chevron', 3, 2500], ['ciment', 8, 6000], ['coude110', 1, 1500], ['tuyau110', 1, 6500],
     ['tuyau75', 0.5, 5000], ['coude75', 1, 1000], ['te75', 1, 1000], ['porte', 1, 27000], ['wc', 1, 17000]],
 ];
 
+// Postes du budget local de la v1 : lave-mains et claustras n'y figuraient pas (ils étaient alors dans le kit).
+const BUDGET_V1 = ['sable', 'gravier', 'planche', 'colle', 'pointes', 'fil', 'transport', 'macon', 'plombier', 'menuisier', 'puisatier', 'imprevus'];
+const AJOUTS_BUDGET = ['claustras', 'support-lavemains', 'seau-lavemains'];
+
 const signatureKit = (kit) => JSON.stringify(kit.map((a) => [a.id, Number(a.qte) || 0, Number(a.prix) || 0]));
 
+/** Vrai si le kit enregistré est absent ou identique à un ancien kit par défaut (donc jamais personnalisé). */
+export function kitNonPersonnalise(kit) {
+  return !kit || ANCIENS_KITS.some((k) => JSON.stringify(k) === signatureKit(kit));
+}
+
+/** Ajoute lave-mains et claustras à un budget qui a gardé les postes de la v1 ; les montants saisis sont conservés. */
+export function budgetMisAJour(budget) {
+  if (!budget) return null;
+  const ids = budget.map((b) => b.id);
+  const structureV1 = ids.length === BUDGET_V1.length && BUDGET_V1.every((id) => ids.includes(id));
+  if (!structureV1) return null;
+  return [...budget, ...BUDGET_DEFAUT.filter((b) => AJOUTS_BUDGET.includes(b.id)).map((b) => ({ ...b }))];
+}
+
 /**
- * Mises à jour des données déjà enregistrées sur un téléphone.
- * v2 puis v3 (oct. 2026) : nouveaux prix de vente du kit de la quincaillerie (135 600 F / latrine).
- * Un kit que la TPE a personnalisé n'est jamais remplacé ; les commandes passées gardent leur prix.
+ * Mises à jour des données déjà enregistrées sur un téléphone (oct. 2026 : nouveaux kits de la quincaillerie).
+ * Un kit ou un budget que la TPE a personnalisé n'est jamais remplacé ; les commandes passées gardent leur prix.
  */
 async function migrer() {
   const version = await db.getKV('versionDonnees', 1);
   if (version >= VERSION_DONNEES) return;
   const kitEnregistre = await db.getKV('kit', null);
-  const kitInchange = !kitEnregistre || ANCIENS_KITS.some((k) => JSON.stringify(k) === signatureKit(kitEnregistre));
-  const params = await db.getKV('params', null);
-  if (kitInchange) {
+  if (kitNonPersonnalise(kitEnregistre)) {
     if (kitEnregistre) await db.del('kv', 'kit'); // le kit par défaut actuel s'applique
+    const params = await db.getKV('params', null);
     if (params?.quincaillerie) {
       await db.setKV('params', { ...params, quincaillerie: { ...params.quincaillerie, prixKit: prixDuKit(KIT_DEFAUT) } });
     }
   }
+  const budget = budgetMisAJour(await db.getKV('budget', null));
+  if (budget) await db.setKV('budget', budget);
   await db.setKV('versionDonnees', VERSION_DONNEES);
 }
 
