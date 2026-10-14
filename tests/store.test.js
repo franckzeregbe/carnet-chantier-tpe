@@ -15,6 +15,11 @@ describe('kit enregistré sur le téléphone', () => {
   test('ancien kit à 17 articles enregistré sans changement : remplacé', () => {
     assert.equal(kitNonPersonnalise(KIT_V1), true);
   });
+  test('kit précédent à 135 600 F enregistré sans changement : remplacé', () => {
+    const v3 = [['fer8', 3, 2500], ['tole', 3, 3500], ['chevron', 3, 2500], ['ciment', 8, 6700], ['coude110', 1, 1500], ['tuyau110', 1, 6500],
+      ['tuyau75', 1, 2500], ['coude75', 1, 1000], ['te75', 1, 1000], ['porte', 1, 26000], ['wc', 1, 18000]].map(([id, qte, prix]) => ({ id, nom: id, qte, prix }));
+    assert.equal(kitNonPersonnalise(v3), true);
+  });
   test('kit modifié par la TPE (un prix ou une quantité) : conservé', () => {
     assert.equal(kitNonPersonnalise(KIT_V1.map((a) => (a.id === 'ciment' ? { ...a, qte: 9 } : a))), false);
     assert.equal(kitNonPersonnalise(KIT_DEFAUT.map((a) => (a.id === 'ciment' ? { ...a, prix: 7000 } : a))), false);

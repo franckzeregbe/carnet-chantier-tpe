@@ -39,7 +39,7 @@ function fusion(defaut, sauve) {
   return out;
 }
 
-const VERSION_DONNEES = 4;
+const VERSION_DONNEES = 5;
 
 // Kits par défaut des versions précédentes ([id, quantité, prix]) : s'ils sont restés tels quels sur le téléphone
 // (même enregistrés sans changement), ils sont remplacés par le kit par défaut actuel.
@@ -51,6 +51,9 @@ const ANCIENS_KITS = [
   // v2 — 127 000 F
   [['fer8', 3, 2000], ['tole', 3, 3000], ['chevron', 3, 2500], ['ciment', 8, 6000], ['coude110', 1, 1500], ['tuyau110', 1, 6500],
     ['tuyau75', 0.5, 5000], ['coude75', 1, 1000], ['te75', 1, 1000], ['porte', 1, 27000], ['wc', 1, 17000]],
+  // v3 — 135 600 F
+  [['fer8', 3, 2500], ['tole', 3, 3500], ['chevron', 3, 2500], ['ciment', 8, 6700], ['coude110', 1, 1500], ['tuyau110', 1, 6500],
+    ['tuyau75', 1, 2500], ['coude75', 1, 1000], ['te75', 1, 1000], ['porte', 1, 26000], ['wc', 1, 18000]],
 ];
 
 // Postes du budget local de la v1 : lave-mains et claustras n'y figuraient pas (ils étaient alors dans le kit).
@@ -74,7 +77,8 @@ export function budgetMisAJour(budget) {
 }
 
 /**
- * Mises à jour des données déjà enregistrées sur un téléphone (oct. 2026 : nouveaux kits de la quincaillerie).
+ * Mises à jour des données déjà enregistrées sur un téléphone (oct. 2026 : nouveaux kits de la quincaillerie ;
+ * v5 : kit avec WC préfabriqué à 121 700 F).
  * Un kit ou un budget que la TPE a personnalisé n'est jamais remplacé ; les commandes passées gardent leur prix.
  */
 async function migrer() {

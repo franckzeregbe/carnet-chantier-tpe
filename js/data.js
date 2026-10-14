@@ -2,7 +2,7 @@
 // les chiffres par défaut sont ceux du modèle PASEA Hambol, tous modifiables dans « Réglages ».
 
 /** Numéro de version de l'application : doit suivre VERSION dans sw.js (vérifié par `npm run check`). */
-export const VERSION_APP = 9;
+export const VERSION_APP = 10;
 
 export const PARAMS_DEFAUT = {
   tpe: {
@@ -31,7 +31,7 @@ export const PARAMS_DEFAUT = {
   },
   quincaillerie: {
     nom: '',
-    prixKit: 135600, // = prixDuKit(kit) : recalculé à chaque modification du kit
+    prixKit: 121700, // = prixDuKit(kit) : recalculé à chaque modification du kit
     acomptePct: 50,
   },
   options: {
@@ -61,21 +61,22 @@ export const partAcompte = (p) => pourcentage(p.quincaillerie.acomptePct) / 100;
 export const nomONG = (p) => p.contrat.commanditaire || p.contrat.sigle || 'ONG commanditaire';
 
 // Kit par défaut (modèle PASEA Hambol) : « KITS DE MATÉRIELS, MATÉRIAUX ET CONSOMMABLES DE LA QUINCAILLERIE DÉDIÉE PROJET PASEA HAMBOL ».
-// Kit par défaut : « Quincaillerie dédiée — prix de vente du kit » (région du Hambol, octobre 2026).
+// Kit par défaut : « Prix de vente du kit au TPE — avec WC préfabriqué » (quincaillerie dédiée, Hambol, oct. 2026).
 // Quantités pour UNE latrine ; le kit se commande par lot de 3 latrines. Tout est modifiable dans Réglages → Kit,
 // car la composition et les prix de la quincaillerie peuvent changer d'une commande à l'autre.
 export const KIT_DEFAUT = [
-  { id: 'fer8', nom: 'Barre de fer à béton de 8', qte: 3, unite: 'u', prix: 2500 },
+  { id: 'fer8', nom: 'Barre de fer à béton de 8', qte: 3, unite: 'u', prix: 3000 },
   { id: 'tole', nom: 'Tôle ondulée ordinaire', qte: 3, unite: 'u', prix: 3500 },
   { id: 'chevron', nom: 'Chevron 6/4', qte: 3, unite: 'u', prix: 2500 },
-  { id: 'ciment', nom: 'Ciment CPA 42,5 (sac de 50 kg)', qte: 8, unite: 'sac', prix: 6700 },
+  { id: 'ciment', nom: 'Ciment CPA 42,5 (sac de 50 kg)', qte: 6, unite: 'sac', prix: 6700 },
   { id: 'coude110', nom: 'Coude PVC Ø 110', qte: 1, unite: 'u', prix: 1500 },
   { id: 'tuyau110', nom: 'Tuyau PVC Ø 110', qte: 1, unite: 'barre', prix: 6500 },
   { id: 'tuyau75', nom: 'Tuyau PVC Ø 75 (½ barre = 3 m)', qte: 1, unite: 'u', prix: 2500 },
   { id: 'coude75', nom: 'Coude PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
   { id: 'te75', nom: 'Té PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
-  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u', prix: 26000 },
-  { id: 'wc', nom: 'WC complet préfabriqué', qte: 1, unite: 'u', prix: 18000 },
+  { id: 'collier75', nom: 'Collier de fixation de tuyau PVC Ø 75', qte: 1, unite: 'u', prix: 1000 },
+  { id: 'porte', nom: 'Porte métallique', qte: 1, unite: 'u', prix: 25000 },
+  { id: 'wc', nom: 'WC complet (préfabriqué)', qte: 1, unite: 'u', prix: 16000 },
 ];
 
 /** Prix d'un kit pour une latrine = somme (quantité × prix unitaire). 0 si aucun prix n'est saisi. */
